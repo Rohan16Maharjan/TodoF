@@ -1,6 +1,9 @@
+import { Box, Button, Flex, Heading, useDisclosure } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
+import CustomModal from '../../utils/Modal';
 import {
   useCreate,
   useDeleteAll,
@@ -8,19 +11,6 @@ import {
   useGetAllTodo,
   useUpdateTodo,
 } from '../services';
-import { useEffect, useState } from 'react';
-import {
-  Button,
-  Flex,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
 
 const Todo = () => {
   const {
@@ -32,7 +22,7 @@ const Todo = () => {
   } = useForm();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data } = useGetAllTodo();
+  const { data: todoData, isLoading } = useGetAllTodo();
   const { mutate: del } = useDeleteAll();
   const { mutate: add } = useCreate();
   const { mutate: del1 } = useDeleteToDo();
@@ -43,7 +33,7 @@ const Todo = () => {
 
   useEffect(() => {
     if (taskId) {
-      const taskToEdit = data?.data.find((item) => item.id === taskId);
+      const taskToEdit = todoData?.data.find((item) => item.id === taskId);
       if (taskToEdit) {
         setValue('title', taskToEdit.title);
       } else {
@@ -52,7 +42,7 @@ const Todo = () => {
     } else {
       reset();
     }
-  }, [taskId, data, setValue, reset]);
+  }, [taskId, todoData, setValue, reset]);
 
   const onSubmit = (eg) => {
     if (taskId) {
@@ -93,24 +83,69 @@ const Todo = () => {
     onOpen();
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div>
-      <h1>Todo</h1>
+    <Box m={'0 auto'} maxW={'50%'} pt={'2rem'}>
+      <Heading textAlign={'center'}>TodoList</Heading>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input
-          {...register('title', { required: 'This field is required' })}
-          style={{ border: '1px solid black' }}
+          {...register('title', { required: 'Input cannot be null' })}
+          style={{
+            width: '100%',
+            border: '1px solid black',
+            padding: '1rem 5rem',
+            margin: '10px ',
+          }}
         />
         {errors.title && (
-          <span style={{ color: 'red' }}>This field is required</span>
+          <span
+            style={{
+              fontSize: '0.875rem',
+              display: 'block',
+              textAlign: 'center',
+              marginTop: '0.25rem',
+              color: 'red',
+            }}
+          >
+            Input Cannot be null
+          </span>
         )}
 
-        <button type="submit">{taskId ? 'Edit' : 'Add'}</button>
-        <button onClick={() => handleDeleteAll()}>Clear All</button>
+        <Flex justifyContent={'space-around'}>
+          <button
+            style={{
+              width: '15%',
+              border: '1px solid red',
+              padding: '1rem',
+              marginRight: '1rem',
+            }}
+            type="submit"
+          >
+            {taskId ? 'Edit' : 'Add'}
+          </button>
+          <button
+            style={{ border: '1px solid red', padding: '1rem' }}
+            onClick={() => handleDeleteAll()}
+          >
+            Clear All
+          </button>
+        </Flex>
       </form>
+
+      {/* Display Todo List */}
       <ul>
-        {data?.data.map((item) => (
-          <li key={item.id}>
+        {todoData?.data.map((item) => (
+          <li
+            key={item.id}
+            style={{
+              display: 'flex',
+              border: '1px solid black',
+              padding: '0.5rem',
+            }}
+          >
             {item?.title}
             <Flex alignItems={'center'}>
               <button
@@ -129,33 +164,27 @@ const Todo = () => {
               <Button mt={4} onClick={() => handleTask(item)}>
                 <FaEye style={{ cursor: 'pointer' }} />
               </Button>
-              <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent>
-                  <ModalHeader>Task</ModalHeader>
-                  <ModalCloseButton />
-                  <ModalBody>
-                    {selectedTask ? (
-                      <div>
-                        <h2>Title: {selectedTask?.title}</h2>
-                      </div>
-                    ) : (
-                      <p>No task selected.</p>
-                    )}{' '}
-                  </ModalBody>
-
-                  <ModalFooter>
-                    <Button colorScheme="blue" mr={3} onClick={onClose}>
-                      Close
-                    </Button>
-                  </ModalFooter>
-                </ModalContent>
-              </Modal>
             </Flex>
           </li>
         ))}
       </ul>
-    </div>
+
+      <CustomModal
+        heading={`View Task`}
+        isOpen={isOpen}
+        onOpen={onOpen}
+        onClose={onClose}
+        selectedTask={selectedTask}
+      >
+        {selectedTask ? (
+          <div>
+            <h2>Title: {selectedTask?.title}</h2>
+          </div>
+        ) : (
+          <p>No task selected.</p>
+        )}
+      </CustomModal>
+    </Box>
   );
 };
 

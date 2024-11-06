@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
 import { httpClient } from './axios';
+import { toast } from 'react-toastify';
 
 // get all
 const getAllTodo = () => {
@@ -11,7 +12,6 @@ const useGetAllTodo = () => {
   return useQuery({
     queryKey: [api.getAll],
     queryFn: getAllTodo,
-    // select: ({ data }) => data.data,
   });
 };
 
@@ -26,6 +26,7 @@ const useDeleteAll = () => {
     mutationFn: deleteAllTodo,
     onSuccess: () => {
       queryClient.invalidateQueries([api.getAll]);
+      toast.warning('Task deleted successfully!!');
     },
   });
 };
@@ -42,6 +43,7 @@ const useCreate = () => {
     mutationFn: createTodo,
     onSuccess: () => {
       queryClient.invalidateQueries([api.getAll]);
+      toast.success('Task added successfully!!');
     },
   });
 };
@@ -57,6 +59,7 @@ const useDeleteToDo = () => {
     mutationFn: deleteTodo,
     onSuccess: () => {
       queryClient.invalidateQueries([api.getAll]);
+      toast.warning('Task deleted successfully!!');
     },
   });
 };
@@ -72,6 +75,7 @@ const useUpdateTodo = () => {
     mutationFn: updateTodo,
     onSuccess: () => {
       queryClient.invalidateQueries([api.getAll]);
+      toast.success('Task edited successfully!!');
     },
   });
 };
