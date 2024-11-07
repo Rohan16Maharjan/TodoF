@@ -1,5 +1,6 @@
 1.Design
 2.Delete and Delete All: modal Component use
+3.Refactoring
 
 The chakra old version(provider theme) and frame motion (open modal) gave a lot of issue.
 
